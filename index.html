@@ -1,0 +1,565 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>yeaks</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --bg: #0c0c0c;
+  --row: #141414;
+  --hover: #191919;
+  --line: #292929;
+  --text: #ededed;
+  --muted: #777;
+  --wave: #393939;
+  --white: #fff;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  padding: 40px 20px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: "Trebuchet MS", sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+main {
+  width: 100%;
+  max-width: 680px;
+  margin: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+h1 {
+  width: 100%;
+  font-size: 29px;
+  font-weight: 600;
+  letter-spacing: -1.5px;
+  margin-bottom: 30px;
+  text-align: center;
+}
+
+.list {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.track {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 15px;
+  padding: 10px;
+  background: var(--row);
+  border: 1px solid var(--line);
+  text-align: left;
+  transition: background .15s, border-color .15s;
+}
+
+.track:hover {
+  background: var(--hover);
+}
+
+.track.active {
+  border-color: #777;
+}
+
+.cover {
+  width: 76px;
+  height: 76px;
+  background: #242424;
+  overflow: hidden;
+}
+
+.cover img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.cover .ph {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  font-size: 25px;
+  font-weight: 600;
+  background: #333;
+  color: #eee;
+}
+
+.body {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3px 0;
+}
+
+.title {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -.3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.artist {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.play {
+  width: 29px;
+  height: 29px;
+  flex-shrink: 0;
+  border: 1px solid #555;
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: background .15s, color .15s;
+}
+
+.play:hover {
+  background: var(--white);
+  color: #000;
+}
+
+.track.active .play {
+  background: var(--white);
+  color: #000;
+  border-color: var(--white);
+}
+
+.play svg {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+
+.play .i-pause {
+  display: none;
+}
+
+.track.playing .play .i-play {
+  display: none;
+}
+
+.track.playing .play .i-pause {
+  display: block;
+}
+
+.wave {
+  flex: 1;
+  height: 35px;
+  position: relative;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+}
+
+.layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.layer i {
+  flex: 1;
+  min-width: 1px;
+  border-radius: 1px;
+  background: var(--wave);
+  height: 8%;
+}
+
+.layer.fill {
+  clip-path: inset(0 calc(100% - var(--p, 0%)) 0 0);
+  pointer-events: none;
+}
+
+.layer.fill i {
+  background: #ddd;
+}
+
+.track.active .layer.fill i {
+  background: #fff;
+}
+
+.hover-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: #aaa;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hover-tip {
+  position: absolute;
+  top: -20px;
+  transform: translateX(-50%);
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  background: #eee;
+  color: #111;
+  padding: 2px 5px;
+  opacity: 0;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.wave:hover .hover-line,
+.wave:hover .hover-tip {
+  opacity: 1;
+}
+
+.time {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: var(--muted);
+  min-width: 75px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+.track.active .time {
+  color: var(--text);
+}
+
+@media (max-width: 480px) {
+  body {
+    padding: 25px 15px;
+  }
+
+  .track {
+    grid-template-columns: 60px minmax(0, 1fr);
+    gap: 11px;
+    padding: 9px;
+  }
+
+  .cover {
+    width: 60px;
+    height: 60px;
+  }
+
+  .time {
+    display: none;
+  }
+
+  .wave {
+    height: 30px;
+  }
+}
+</style>
+</head>
+
+<body>
+<main>
+  <h1>yeaks</h1>
+  <div class="list" id="list"></div>
+</main>
+
+<script>
+const TRACKS = [
+  { title: "Track One", artist: "", src: "music/track1.mp3", cover: "covers/track1.jpg" },
+  { title: "Track Two", artist: "", src: "music/track2.mp3", cover: "covers/track2.jpg" },
+  { title: "Track Three", artist: "", src: "music/track3.mp3", cover: "covers/track3.jpg" }
+];
+
+const BARS = 90;
+const list = document.getElementById("list");
+const rows = [];
+let current = -1;
+
+const fmt = s => {
+  if (!isFinite(s)) return "0:00";
+  return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
+};
+
+async function getPeaks(src) {
+  const res = await fetch(src);
+  if (!res.ok) throw new Error("Audio unavailable");
+
+  const buffer = await res.arrayBuffer();
+  const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+  try {
+    const audioBuf = await ctx.decodeAudioData(buffer);
+    const channels = [];
+
+    for (let c = 0; c < audioBuf.numberOfChannels; c++) {
+      channels.push(audioBuf.getChannelData(c));
+    }
+
+    const size = Math.max(1, Math.floor(audioBuf.length / BARS));
+    const peaks = [];
+
+    for (let i = 0; i < BARS; i++) {
+      let sum = 0, n = 0;
+      const start = i * size;
+      const end = Math.min(audioBuf.length, start + size);
+      const step = Math.max(1, Math.floor(size / 400));
+
+      for (let j = start; j < end; j += step) {
+        let v = 0;
+        for (const ch of channels) v += Math.abs(ch[j]);
+        sum += v / channels.length;
+        n++;
+      }
+
+      peaks.push(sum / (n || 1));
+    }
+
+    const max = Math.max(...peaks) || 1;
+    return peaks.map(p => Math.max(.1, Math.pow(p / max, .8)));
+  } finally {
+    await ctx.close();
+  }
+}
+
+const queue = [];
+let busy = false;
+
+function enqueue(job) {
+  queue.push(job);
+  if (!busy) runQueue();
+}
+
+async function runQueue() {
+  busy = true;
+  while (queue.length) await queue.shift()();
+  busy = false;
+}
+
+TRACKS.forEach((t, idx) => {
+  const audio = new Audio();
+  audio.preload = "metadata";
+  audio.src = t.src;
+
+  const el = document.createElement("div");
+  el.className = "track";
+
+  const cover = document.createElement("div");
+  cover.className = "cover";
+
+  function placeholder() {
+    cover.innerHTML = "";
+    const d = document.createElement("div");
+    d.className = "ph";
+    d.textContent = (t.title || "?").trim().charAt(0).toUpperCase();
+    cover.appendChild(d);
+  }
+
+  if (t.cover) {
+    const img = new Image();
+    img.alt = "";
+    img.onerror = placeholder;
+    img.src = t.cover;
+    cover.appendChild(img);
+  } else {
+    placeholder();
+  }
+
+  const body = document.createElement("div");
+  body.className = "body";
+
+  body.innerHTML = `
+    <div>
+      <div class="title"></div>
+      <div class="artist"></div>
+    </div>
+    <div class="controls">
+      <button class="play" aria-label="play / pause">
+        <svg class="i-play" viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>
+        <svg class="i-pause" viewBox="0 0 24 24"><path d="M6 4h4v16H6zM14 4h4v16h-4z"/></svg>
+      </button>
+      <div class="wave">
+        <div class="layer base"></div>
+        <div class="layer fill"></div>
+        <div class="hover-line"></div>
+        <div class="hover-tip">0:00</div>
+      </div>
+      <div class="time">0:00 / 0:00</div>
+    </div>
+  `;
+
+  body.querySelector(".title").textContent = t.title || "untitled";
+  body.querySelector(".artist").textContent = t.artist || "";
+
+  el.append(cover, body);
+  list.appendChild(el);
+
+  const wave = body.querySelector(".wave");
+  const base = body.querySelector(".base");
+  const fill = body.querySelector(".fill");
+  const hoverLine = body.querySelector(".hover-line");
+  const hoverTip = body.querySelector(".hover-tip");
+  const time = body.querySelector(".time");
+  const playBtn = body.querySelector(".play");
+
+  const baseBars = [];
+  const fillBars = [];
+
+  for (let i = 0; i < BARS; i++) {
+    const a = document.createElement("i");
+    const b = document.createElement("i");
+    base.appendChild(a);
+    fill.appendChild(b);
+    baseBars.push(a);
+    fillBars.push(b);
+  }
+
+  enqueue(async () => {
+    try {
+      applyPeaks(await getPeaks(t.src));
+    } catch {
+      applyPeaks(baseBars.map((_, i) =>
+        .2 + .15 * Math.abs(Math.sin(i * .4))
+      ));
+    }
+  });
+
+  function applyPeaks(peaks) {
+    peaks.forEach((p, i) => {
+      const h = Math.round(p * 100) + "%";
+      baseBars[i].style.height = h;
+      fillBars[i].style.height = h;
+    });
+  }
+
+  function paint() {
+    const d = audio.duration || 0;
+    const p = d ? audio.currentTime / d : 0;
+    fill.style.setProperty("--p", (p * 100) + "%");
+    time.textContent = fmt(audio.currentTime) + " / " + fmt(d);
+  }
+
+  let raf = null;
+
+  function loop() {
+    paint();
+    raf = requestAnimationFrame(loop);
+  }
+
+  function toggle() {
+    if (audio.paused) {
+      rows.forEach((r, i) => {
+        if (i !== idx) r.audio.pause();
+      });
+
+      current = idx;
+      rows.forEach((r, i) =>
+        r.el.classList.toggle("active", i === idx)
+      );
+
+      audio.play().catch(console.warn);
+    } else {
+      audio.pause();
+    }
+  }
+
+  playBtn.addEventListener("click", toggle);
+
+  audio.addEventListener("play", () => {
+    el.classList.add("playing");
+    cancelAnimationFrame(raf);
+    loop();
+  });
+
+  audio.addEventListener("pause", () => {
+    el.classList.remove("playing");
+    cancelAnimationFrame(raf);
+    paint();
+  });
+
+  audio.addEventListener("loadedmetadata", paint);
+
+  audio.addEventListener("ended", () => {
+    audio.currentTime = 0;
+    const next = rows[idx + 1];
+    if (next) next.toggle();
+    paint();
+  });
+
+  let dragging = false;
+
+  const posOf = e => {
+    const r = wave.getBoundingClientRect();
+    return Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+  };
+
+  const seek = e => {
+    if (audio.duration) {
+      audio.currentTime = posOf(e) * audio.duration;
+      paint();
+    }
+  };
+
+  wave.addEventListener("pointerdown", e => {
+    dragging = true;
+    wave.setPointerCapture(e.pointerId);
+    seek(e);
+  });
+
+  wave.addEventListener("pointermove", e => {
+    const p = posOf(e);
+    hoverLine.style.left = p * 100 + "%";
+    hoverTip.style.left = p * 100 + "%";
+    hoverTip.textContent = fmt(p * (audio.duration || 0));
+    if (dragging) seek(e);
+  });
+
+  wave.addEventListener("pointerup", () => dragging = false);
+  wave.addEventListener("pointercancel", () => dragging = false);
+
+  rows.push({ el, audio, toggle });
+  paint();
+});
+
+document.addEventListener("keydown", e => {
+  if (
+    e.code !== "Space" ||
+    e.target.matches("input, textarea, button") ||
+    e.target.closest(".wave") ||
+    !rows.length
+  ) return;
+
+  e.preventDefault();
+  rows[current >= 0 ? current : 0].toggle();
+});
+</script>
+</body>
+</html>
